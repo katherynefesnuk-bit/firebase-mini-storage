@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.uid == "GANTI_DENGAN_UID_ADMIN";
+    }
+
+    match /files/{fileName} {
+      // Publik dapat membaca file jika memiliki URL.
+      allow get: if true;
+      // Hanya admin dapat melihat daftar isi folder.
+      allow list: if isAdmin();
+      // Admin dapat mengunggah file baru maksimal 50 MB.
+      allow create: if isAdmin()
+        && request.resource.size <= 50 * 1024 * 1024;
+      allow delete: if isAdmin();
+      // Cegah file yang sudah ada ditimpa dari aplikasi ini.
+      allow update: if false;
+    }
+  }
+}
